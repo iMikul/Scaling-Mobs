@@ -23,6 +23,11 @@ public class ScalingMobsConfig
     private static final ForgeConfigSpec.DoubleValue mobDamageBase;
     private static final ForgeConfigSpec.DoubleValue maxDamage;
 
+    private static final ForgeConfigSpec.DoubleValue mobSpeedRate;
+    private static final ForgeConfigSpec.DoubleValue mobSpeedBase;
+    private static final ForgeConfigSpec.DoubleValue maxSpeed;
+
+
     private static final ForgeConfigSpec.DoubleValue mobPiercingRate;
     private static final ForgeConfigSpec.DoubleValue mobPiercingBase;
     private static final ForgeConfigSpec.DoubleValue maxPiercing;
@@ -37,53 +42,85 @@ public class ScalingMobsConfig
 
     static
     {
+        BUILDER.push("Misc");
+
         exponential = BUILDER
                 .comment("If true, mob stats will increase exponentially")
-                .define("exponential", false);
+                .define("Use Exponential Scaling", false);
+
+        mobsStopBurningDay = BUILDER
+                .comment("After this day in the Minecraft world, all hostile mobs will be immune to burning in daylight")
+                .defineInRange("Mobs Stop Burning on Day", 7, 0, Integer.MAX_VALUE);
+
+        BUILDER.pop();
+
+        BUILDER.push("Health");
 
         mobHealthRate = BUILDER
                 .comment("The decimal amount that hostile mobs' health increase per day")
-                .defineInRange("mobScaleRate", 0.03, 0.0, Double.MAX_VALUE);
+                .defineInRange("Health Scale Rate", 0.03, 0.0, Double.POSITIVE_INFINITY);
         mobHealthBase = BUILDER
                 .comment("The decimal amount of the mobs' base health in the beginning")
-                .defineInRange("mobHealthBase", 1.0, 0.0, Double.MAX_VALUE);
+                .defineInRange("Mob Health Base", 1.0, 0.0, Double.POSITIVE_INFINITY);
         maxHealth = BUILDER
                 .comment("The maximum amount that hostile mobs' damage can scale to")
-                .defineInRange("maxScaling", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
+                .defineInRange("Max Scaled Health", Double.POSITIVE_INFINITY, 0.0, Double.POSITIVE_INFINITY);
+
+        BUILDER.pop();
+        BUILDER.push("Damage");
 
         mobDamageRate = BUILDER
                 .comment("The decimal amount that hostile mobs' damage increase per day")
-                .defineInRange("mobScaleRate", 0.03, 0.0, Double.MAX_VALUE);
+                .defineInRange("Damage Scale Rate", 0.03, 0.0, Double.POSITIVE_INFINITY);
         mobDamageBase = BUILDER
                 .comment("The decimal amount of the mobs' base damage in the beginning")
-                .defineInRange("mobStatsBase", 1.0, 0.0, Double.MAX_VALUE);
+                .defineInRange("Mob Damage Base", 1.0, 0.0, Double.POSITIVE_INFINITY);
         maxDamage = BUILDER
                 .comment("The maximum amount that hostile mobs' damage can scale to")
-                .defineInRange("maxScaling", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
+                .defineInRange("Max Scaled Damage", Double.POSITIVE_INFINITY, 0.0, Double.POSITIVE_INFINITY);
+
+        BUILDER.pop();
+        BUILDER.push("Speed");
+
+        mobSpeedRate = BUILDER
+                .comment("The decimal amount that hostile mobs' speed increase per day")
+                .defineInRange("Speed Scale Rate", 0.005, 0.0, Double.POSITIVE_INFINITY);
+
+        mobSpeedBase = BUILDER
+                .comment("The decimal amount of the mobs' base speed in the beginning")
+                .defineInRange("Mob Speed Base", 1.0, 0.0, Double.POSITIVE_INFINITY);
+
+        maxSpeed = BUILDER
+                .comment("The maximum amount that hostile mobs' speed can scale to")
+                .defineInRange("Max Scaled Speed", 1, 0.0, Double.POSITIVE_INFINITY);
+
+        BUILDER.pop();
+        BUILDER.push("Armor Piercing");
 
         mobPiercingRate = BUILDER
                 .comment("The decimal amount of increase to mobs' damage that ignores armor per day")
-                .defineInRange("mobPiercingRate", 0.01, 0.0, Double.MAX_VALUE);
+                .defineInRange("Armor Piercing Scale Rate", 0.01, 0.0, Double.POSITIVE_INFINITY);
         mobPiercingBase = BUILDER
                 .comment("The decimal amount of mobs' damage that ignores armor in the beginning")
-                .defineInRange("mobPiercingBase", 0.1, 0.0, Double.MAX_VALUE);
+                .defineInRange("Armor Piercing Base", 0.1, 0.0, Double.POSITIVE_INFINITY);
         maxPiercing = BUILDER
                 .comment("The maximum amount of increase to mobs' damage that ignores armor")
-                .defineInRange("maxPiercing", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
+                .defineInRange("Max Scaled Armor Piercing", 1, 0.0, 1.0);
+
+        BUILDER.pop();
+        BUILDER.push("Drops");
 
         mobDropsRate = BUILDER
                 .comment("The decimal amount of increase to mobs' drops per day")
-                .defineInRange("mobDropsRate", 0.02, 0.0, Double.MAX_VALUE);
+                .defineInRange("Mob Drops Scaling Rate", 0.02, 0.0, Double.POSITIVE_INFINITY);
         mobDropsBase = BUILDER
                 .comment("The decimal amount of mobs' drops in the beginning")
-                .defineInRange("mobDropsBase", 1.0, 0.0, Double.MAX_VALUE);
+                .defineInRange("Mob Drops Base", 1.0, 0.0, Double.POSITIVE_INFINITY);
         maxDrops = BUILDER
                 .comment("The maximum amount of increase to mobs' drops")
-                .defineInRange("maxDrops", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
+                .defineInRange("Max Scaled Mob Drops", 4.0, 0.0, Double.POSITIVE_INFINITY);
 
-        mobsStopBurningDay = BUILDER
-                .comment("The day that hostile mobs stop burning")
-                .defineInRange("mobsStopBurningDay", 7, 0, Integer.MAX_VALUE);
+        BUILDER.pop();
 
         SPEC = BUILDER.build();
     }
@@ -141,6 +178,21 @@ public class ScalingMobsConfig
         return maxDrops.get();
     }
 
+    public double getMobSpeedRate()
+    {
+        return mobSpeedRate.get();
+    }
+
+    public double getMobSpeedBase()
+    {
+        return mobSpeedBase.get();
+    }
+
+    public double getMobSpeedMax()
+    {
+        return maxSpeed.get();
+    }
+
     public int getMobsStopBurningDay()
     {
         return mobsStopBurningDay.get();
@@ -175,6 +227,19 @@ public class ScalingMobsConfig
     public void setMobDamageMax(double max)
     {
         maxDamage.set(max);
+    }
+
+    public void setMobSpeedRate(double rate)
+    {
+        mobSpeedRate.set(rate);
+    }
+    public void setMobSpeedBase(double base)
+    {
+        mobSpeedBase.set(base);
+    }
+    public void setMobSpeedMax(double max)
+    {
+        maxSpeed.set(max);
     }
 
     public void setPiercingRate(double rate)

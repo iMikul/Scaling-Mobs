@@ -31,21 +31,36 @@ public class MonsterEvents
 
             AttributeInstance maxHealth = mob.getAttribute(Attributes.MAX_HEALTH);
             AttributeInstance damage = mob.getAttribute(Attributes.ATTACK_DAMAGE);
+            AttributeInstance speed = mob.getAttribute(Attributes.MOVEMENT_SPEED);
 
-            if (damage != null && maxHealth != null)
+            float currentHealthPercent = mob.getHealth() / mob.getMaxHealth();
+
+            if (damage != null && maxHealth != null && speed != null)
             {
+                double baseHealth = ScalingMobsConfig.getInstance().getMobHealthBase();
                 double healthRate = ScalingMobsConfig.getInstance().getMobHealthRate();
                 double healthMax = ScalingMobsConfig.getInstance().getMobHealthMax();
+
                 double damageRate = ScalingMobsConfig.getInstance().getMobDamageRate();
                 double damageMax = ScalingMobsConfig.getInstance().getMobDamageMax();
-                double baseStats = ScalingMobsConfig.getInstance().getMobHealthBase();
+                double baseDamage = ScalingMobsConfig.getInstance().getMobDamageBase();
+
+                double speedRate = ScalingMobsConfig.getInstance().getMobSpeedRate();
+                double speedMax = ScalingMobsConfig.getInstance().getMobSpeedMax();
+                double baseSpeed = ScalingMobsConfig.getInstance().getMobSpeedBase();
+
                 boolean exponential = ScalingMobsConfig.getInstance().areStatsExponential();
 
-                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:HealthBase", baseStats - 1, AttributeModifier.Operation.MULTIPLY_BASE));
-                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:Health", Math.min(healthMax, getStatIncrease(healthRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
-                damage.addTransientModifier(new AttributeModifier("ScalingMobs:DamageBase", baseStats - 1, AttributeModifier.Operation.MULTIPLY_BASE));
-                damage.addTransientModifier(new AttributeModifier("ScalingMobs:Damage", Math.min(damageMax, getStatIncrease(damageRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
-                mob.setHealth(mob.getMaxHealth());
+                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:HealthBase", baseHealth - 1, AttributeModifier.Operation.MULTIPLY_BASE));
+                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:Health", Math.min(healthMax - 1, getStatIncrease(healthRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
+
+                damage.addTransientModifier(new AttributeModifier("ScalingMobs:DamageBase", baseDamage - 1, AttributeModifier.Operation.MULTIPLY_BASE));
+                damage.addTransientModifier(new AttributeModifier("ScalingMobs:Damage", Math.min(damageMax - 1, getStatIncrease(damageRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
+
+                speed.addTransientModifier(new AttributeModifier("ScalingMobs:SpeedBase", baseSpeed - 1, AttributeModifier.Operation.MULTIPLY_BASE));
+                speed.addTransientModifier(new AttributeModifier("ScalingMobs:Speed", Math.min(speedMax - 1, getStatIncrease(speedRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
+
+                mob.setHealth(mob.getMaxHealth() * currentHealthPercent);
             }
         }
     }
