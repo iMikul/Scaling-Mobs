@@ -1,10 +1,10 @@
-package net.momostudios.scalingmobs.init;
+package com.momosoftworks.scalingmobs.init;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.command.CommandSource;
+import com.momosoftworks.scalingmobs.command.BaseCommand;
+import com.momosoftworks.scalingmobs.command.impl.ScalingMobsCommand;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.momostudios.scalingmobs.command.BaseCommand;
-import net.momostudios.scalingmobs.command.impl.ScalingMobsCommand;
 
 import java.util.ArrayList;
 
@@ -14,7 +14,7 @@ public class CommandInit
 
     public static void registerCommands(final RegisterCommandsEvent event)
     {
-        CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
 
         commands.add(new ScalingMobsCommand("scalingmobs", 2, true));
 

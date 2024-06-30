@@ -1,4 +1,4 @@
-package net.momostudios.scalingmobs.config;
+package com.momosoftworks.scalingmobs.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -27,6 +27,10 @@ public class ScalingMobsConfig
     private static final ForgeConfigSpec.DoubleValue mobPiercingBase;
     private static final ForgeConfigSpec.DoubleValue maxPiercing;
 
+    private static final ForgeConfigSpec.DoubleValue mobDropsRate;
+    private static final ForgeConfigSpec.DoubleValue mobDropsBase;
+    private static final ForgeConfigSpec.DoubleValue maxDrops;
+
     public static final ForgeConfigSpec.IntValue mobsStopBurningDay;
 
     private static final ForgeConfigSpec.BooleanValue exponential;
@@ -38,47 +42,53 @@ public class ScalingMobsConfig
                 .define("exponential", false);
 
         mobHealthRate = BUILDER
-                .comment("The percent amount that hostile mobs' damage increase per day")
+                .comment("The decimal amount that hostile mobs' health increase per day")
                 .defineInRange("mobScaleRate", 0.03, 0.0, Double.MAX_VALUE);
         mobHealthBase = BUILDER
-                .comment("The percent amount that is added to hostile mobs' base damage")
-                .defineInRange("mobStatsBase", 1.0, 0.0, Double.MAX_VALUE);
+                .comment("The decimal amount of the mobs' base health in the beginning")
+                .defineInRange("mobHealthBase", 1.0, 0.0, Double.MAX_VALUE);
         maxHealth = BUILDER
                 .comment("The maximum amount that hostile mobs' damage can scale to")
                 .defineInRange("maxScaling", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
 
         mobDamageRate = BUILDER
-                .comment("The percent amount that hostile mobs' damage increase per day")
+                .comment("The decimal amount that hostile mobs' damage increase per day")
                 .defineInRange("mobScaleRate", 0.03, 0.0, Double.MAX_VALUE);
         mobDamageBase = BUILDER
-                .comment("The percent amount that is added to hostile mobs' base damage")
+                .comment("The decimal amount of the mobs' base damage in the beginning")
                 .defineInRange("mobStatsBase", 1.0, 0.0, Double.MAX_VALUE);
         maxDamage = BUILDER
                 .comment("The maximum amount that hostile mobs' damage can scale to")
                 .defineInRange("maxScaling", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
 
         mobPiercingRate = BUILDER
-                .comment("The percent amount of increase to mobs' damage that ignores armor per day")
+                .comment("The decimal amount of increase to mobs' damage that ignores armor per day")
                 .defineInRange("mobPiercingRate", 0.01, 0.0, Double.MAX_VALUE);
         mobPiercingBase = BUILDER
-                .comment("The percent amount of mobs' damage that ignores armor")
-                .defineInRange("mobPiercingBase", 0.0, 0.0, Double.MAX_VALUE);
+                .comment("The decimal amount of mobs' damage that ignores armor in the beginning")
+                .defineInRange("mobPiercingBase", 0.1, 0.0, Double.MAX_VALUE);
         maxPiercing = BUILDER
                 .comment("The maximum amount of increase to mobs' damage that ignores armor")
                 .defineInRange("maxPiercing", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
 
+        mobDropsRate = BUILDER
+                .comment("The decimal amount of increase to mobs' drops per day")
+                .defineInRange("mobDropsRate", 0.02, 0.0, Double.MAX_VALUE);
+        mobDropsBase = BUILDER
+                .comment("The decimal amount of mobs' drops in the beginning")
+                .defineInRange("mobDropsBase", 1.0, 0.0, Double.MAX_VALUE);
+        maxDrops = BUILDER
+                .comment("The maximum amount of increase to mobs' drops")
+                .defineInRange("maxDrops", Double.MAX_VALUE, 0.0, Double.MAX_VALUE);
+
         mobsStopBurningDay = BUILDER
-                .comment("The number of days before mobs stop burning")
-                .defineInRange("mobsStopBurningDay", 3, 0, Integer.MAX_VALUE);
+                .comment("The day that hostile mobs stop burning")
+                .defineInRange("mobsStopBurningDay", 7, 0, Integer.MAX_VALUE);
 
         SPEC = BUILDER.build();
     }
 
     // Getters
-    public boolean areStatsExponential()
-    {
-        return exponential.get();
-    }
     public double getMobHealthRate()
     {
         return mobHealthRate.get();
@@ -91,6 +101,7 @@ public class ScalingMobsConfig
     {
         return maxHealth.get();
     }
+
     public double getMobDamageRate()
     {
         return mobDamageRate.get();
@@ -103,6 +114,7 @@ public class ScalingMobsConfig
     {
         return maxDamage.get();
     }
+
     public double getPiercingRate()
     {
         return mobPiercingRate.get();
@@ -115,16 +127,30 @@ public class ScalingMobsConfig
     {
         return mobPiercingBase.get();
     }
+
+    public double getMobDropsRate()
+    {
+        return mobDropsRate.get();
+    }
+    public double getMobDropsBase()
+    {
+        return mobDropsBase.get();
+    }
+    public double getMobDropsMax()
+    {
+        return maxDrops.get();
+    }
+
     public int getMobsStopBurningDay()
     {
         return mobsStopBurningDay.get();
     }
+    public boolean areStatsExponential()
+    {
+        return exponential.get();
+    }
 
     // Setters
-    public void setExponentialStats(boolean log)
-    {
-        exponential.set(log);
-    }
     public void setMobHealthRate(double rate)
     {
         mobHealthRate.set(rate);
@@ -137,6 +163,7 @@ public class ScalingMobsConfig
     {
         maxHealth.set(max);
     }
+
     public void setMobDamageRate(double rate)
     {
         mobDamageRate.set(rate);
@@ -149,6 +176,7 @@ public class ScalingMobsConfig
     {
         maxDamage.set(max);
     }
+
     public void setPiercingRate(double rate)
     {
         mobPiercingRate.set(rate);
@@ -161,9 +189,27 @@ public class ScalingMobsConfig
     {
         maxPiercing.set(max);
     }
+
+    public void setMobDropsRate(double rate)
+    {
+        mobDropsRate.set(rate);
+    }
+    public void setMobDropsBase(double base)
+    {
+        mobDropsBase.set(base);
+    }
+    public void setMobDropsMax(double max)
+    {
+        maxDrops.set(max);
+    }
+
     public void setMobsStopBurningDay(int day)
     {
         mobsStopBurningDay.set(day);
+    }
+    public void setExponentialStats(boolean log)
+    {
+        exponential.set(log);
     }
 
     public static void setup()

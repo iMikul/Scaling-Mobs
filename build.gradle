@@ -2,30 +2,37 @@ buildscript {
     repositories {
         // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
         mavenCentral()
-        maven { url = 'https://maven.minecraftforge.net' }
         maven { url='https://repo.spongepowered.org/repository/maven-public' }
     }
     dependencies {
         classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT', changing: true
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle'
+plugins {
+    id 'maven-publish'
+    id 'java-library'
+    id 'signing'
+    id 'idea'
+    id 'net.neoforged.gradle' version '[6.0.13, 6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+}
+
+apply plugin: 'net.neoforged.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
-group = 'net.momostudios'
-version = 'r2.0'
+group = 'com.momosoftworks'
+version = '2.2'
 
 java {
     archivesBaseName = 'ScalingMobs'
-    toolchain.languageVersion = JavaLanguageVersion.of(8)
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20210309-1.16.5'
+    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
 
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -117,8 +124,8 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
-    minecraft 'net.minecraftforge:forge:1.16.5-36.2.23'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    minecraft 'net.neoforged:forge:1.20.1-47.1.79'
 }
 
 mixin {

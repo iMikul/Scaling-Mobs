@@ -1,13 +1,14 @@
 {
   "required": true,
   "compatibilityLevel": "JAVA_8",
-  "package": "net.momostudios.scalingmobs.mixin",
-  "client": [
-    "MixinMobBurning"
-  ],
-  "injectors":
-  {
+  "package": "com.momosoftworks.scalingmobs.mixin",
+  "injectors": {
     "defaultRequire": 1
   },
-  "refmap": "cold_sweat.mixin-refmap.json"
+  "refmap": "scaling_mobs.mixin-refmap.json",
+  "mixins": [
+    "MixinMobBurning"
+  ],
+  "client": [
+  ]
 }
