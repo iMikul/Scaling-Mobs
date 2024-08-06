@@ -8,6 +8,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class ScalingMobsConfig
 {
@@ -39,6 +40,7 @@ public class ScalingMobsConfig
     public static final ForgeConfigSpec.IntValue mobsStopBurningDay;
 
     private static final ForgeConfigSpec.BooleanValue exponential;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> mobWhitelist;
 
     static
     {
@@ -52,7 +54,10 @@ public class ScalingMobsConfig
                 .comment("After this day in the Minecraft world, all hostile mobs will be immune to burning in daylight")
                 .defineInRange("Mobs Stop Burning on Day", 7, 0, Integer.MAX_VALUE);
 
-        BUILDER.pop();
+        mobWhitelist = BUILDER
+                .comment("A list of mobs that will scale, even if they're not monsters")
+                .defineList("Mob Whitelist", List.of(),
+                            element -> element instanceof String);  BUILDER.pop();
 
         BUILDER.push("Health");
 
@@ -92,7 +97,7 @@ public class ScalingMobsConfig
 
         maxSpeed = BUILDER
                 .comment("The maximum amount that hostile mobs' speed can scale to")
-                .defineInRange("Max Scaled Speed", 1, 0.0, Double.POSITIVE_INFINITY);
+                .defineInRange("Max Scaled Speed", 1.5, 0.0, Double.POSITIVE_INFINITY);
 
         BUILDER.pop();
         BUILDER.push("Armor Piercing");
@@ -118,7 +123,7 @@ public class ScalingMobsConfig
                 .defineInRange("Mob Drops Base", 1.0, 0.0, Double.POSITIVE_INFINITY);
         maxDrops = BUILDER
                 .comment("The maximum amount of increase to mobs' drops")
-                .defineInRange("Max Scaled Mob Drops", 4.0, 0.0, Double.POSITIVE_INFINITY);
+                .defineInRange("Max Scaled Mob Drops", 400, 0.0, Double.POSITIVE_INFINITY);
 
         BUILDER.pop();
 
@@ -126,6 +131,10 @@ public class ScalingMobsConfig
     }
 
     // Getters
+    public List<? extends String> getMobWhitelist()
+    {   return mobWhitelist.get();
+    }
+
     public double getMobHealthRate()
     {
         return mobHealthRate.get();

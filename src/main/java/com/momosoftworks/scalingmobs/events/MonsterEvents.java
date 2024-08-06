@@ -1,9 +1,7 @@
 package com.momosoftworks.scalingmobs.events;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -16,6 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import com.momosoftworks.scalingmobs.config.ScalingMobsConfig;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.lang.reflect.Method;
 
@@ -25,42 +24,57 @@ public class MonsterEvents
     @SubscribeEvent
     public static void onMobSpawn(EntityJoinLevelEvent event)
     {
-        if (event.getEntity() instanceof Monster mob)
+        if (event.getEntity() instanceof LivingEntity living && isScalingMob(living))
         {
             int currentDay = (int) (event.getLevel().getDayTime() / 24000L);
 
-            AttributeInstance maxHealth = mob.getAttribute(Attributes.MAX_HEALTH);
-            AttributeInstance damage = mob.getAttribute(Attributes.ATTACK_DAMAGE);
-            AttributeInstance speed = mob.getAttribute(Attributes.MOVEMENT_SPEED);
+            AttributeInstance maxHealth = living.getAttribute(Attributes.MAX_HEALTH);
+            AttributeInstance damage = living.getAttribute(Attributes.ATTACK_DAMAGE);
+            AttributeInstance speed = living.getAttribute(Attributes.MOVEMENT_SPEED);
 
-            float currentHealthPercent = mob.getHealth() / mob.getMaxHealth();
+            float currentHealthPercent = living.getHealth() / living.getMaxHealth();
+            boolean exponential = ScalingMobsConfig.getInstance().areStatsExponential();
 
-            if (damage != null && maxHealth != null && speed != null)
+            if (damage != null)
+            {
+                double damageRate = ScalingMobsConfig.getInstance().getMobDamageRate();
+                double damageMax = ScalingMobsConfig.getInstance().getMobDamageMax();
+                double baseDamage = ScalingMobsConfig.getInstance().getMobDamageBase();
+
+                damage.addTransientModifier(new AttributeModifier("ScalingMobs:DamageBase",
+                                                                  baseDamage - 1,
+                                                                  AttributeModifier.Operation.MULTIPLY_BASE));
+                damage.addTransientModifier(new AttributeModifier("ScalingMobs:Damage",
+                                                                  Math.min(damageMax - 1, getStatIncrease(damageRate, currentDay, exponential)),
+                                                                  AttributeModifier.Operation.MULTIPLY_TOTAL));
+            }
+
+            if (maxHealth != null)
             {
                 double baseHealth = ScalingMobsConfig.getInstance().getMobHealthBase();
                 double healthRate = ScalingMobsConfig.getInstance().getMobHealthRate();
                 double healthMax = ScalingMobsConfig.getInstance().getMobHealthMax();
 
-                double damageRate = ScalingMobsConfig.getInstance().getMobDamageRate();
-                double damageMax = ScalingMobsConfig.getInstance().getMobDamageMax();
-                double baseDamage = ScalingMobsConfig.getInstance().getMobDamageBase();
+                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:HealthBase",
+                                                                     baseHealth - 1,
+                                                                     AttributeModifier.Operation.MULTIPLY_BASE));
+                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:Health",
+                                                                     Math.min(healthMax - 1, getStatIncrease(healthRate, currentDay, exponential)),
+                                                                     AttributeModifier.Operation.MULTIPLY_TOTAL));
 
+                living.setHealth(living.getMaxHealth() * currentHealthPercent);
+            }
+
+            if (speed != null)
+            {
                 double speedRate = ScalingMobsConfig.getInstance().getMobSpeedRate();
                 double speedMax = ScalingMobsConfig.getInstance().getMobSpeedMax();
                 double baseSpeed = ScalingMobsConfig.getInstance().getMobSpeedBase();
 
-                boolean exponential = ScalingMobsConfig.getInstance().areStatsExponential();
-
-                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:HealthBase", baseHealth - 1, AttributeModifier.Operation.MULTIPLY_BASE));
-                maxHealth.addTransientModifier(new AttributeModifier("ScalingMobs:Health", Math.min(healthMax - 1, getStatIncrease(healthRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
-
-                damage.addTransientModifier(new AttributeModifier("ScalingMobs:DamageBase", baseDamage - 1, AttributeModifier.Operation.MULTIPLY_BASE));
-                damage.addTransientModifier(new AttributeModifier("ScalingMobs:Damage", Math.min(damageMax - 1, getStatIncrease(damageRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
-
                 speed.addTransientModifier(new AttributeModifier("ScalingMobs:SpeedBase", baseSpeed - 1, AttributeModifier.Operation.MULTIPLY_BASE));
-                speed.addTransientModifier(new AttributeModifier("ScalingMobs:Speed", Math.min(speedMax - 1, getStatIncrease(speedRate, currentDay, exponential)), AttributeModifier.Operation.MULTIPLY_TOTAL));
-
-                mob.setHealth(mob.getMaxHealth() * currentHealthPercent);
+                speed.addTransientModifier(new AttributeModifier("ScalingMobs:Speed",
+                                                                 Math.min(speedMax - 1, getStatIncrease(speedRate, currentDay, exponential)),
+                                                                 AttributeModifier.Operation.MULTIPLY_TOTAL));
             }
         }
     }
@@ -82,12 +96,10 @@ public class MonsterEvents
     public static double getStatIncrease(double rate, int day, boolean exponential)
     {
         if (exponential)
-        {
-            return Math.pow(1 + rate, day) - 1;
+        {   return Math.pow(1 + rate, day) - 1;
         }
         else
-        {
-            return (day * rate);
+        {   return (day * rate);
         }
     }
 
@@ -95,7 +107,8 @@ public class MonsterEvents
     @SubscribeEvent
     public static void onMobDamage(LivingDamageEvent event)
     {
-        if (event.getEntity() instanceof Player && event.getSource().getEntity() instanceof Monster)
+        if (event.getEntity() instanceof Player
+        && event.getSource().getEntity() instanceof LivingEntity living && isScalingMob(living))
         {
             int currentDay = (int) (event.getEntity().level().getDayTime() / 24000L);
             double scaleRate = ScalingMobsConfig.getInstance().getPiercingRate();
@@ -114,7 +127,7 @@ public class MonsterEvents
     @SubscribeEvent
     public static void onMobDrop(LivingDropsEvent event)
     {
-        if (event.getEntity() instanceof Monster)
+        if (isScalingMob(event.getEntity()))
         {
             double dropRate = ScalingMobsConfig.getInstance().getMobDropsRate();
             double dropBase = ScalingMobsConfig.getInstance().getMobDropsBase();
@@ -140,5 +153,11 @@ public class MonsterEvents
             }
             catch (Exception e) {}
         }
+    }
+
+    public static boolean isScalingMob(LivingEntity entity)
+    {
+        return entity instanceof Monster
+            || ScalingMobsConfig.getInstance().getMobWhitelist().contains(ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString());
     }
 }
