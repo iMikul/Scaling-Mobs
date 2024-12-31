@@ -15,7 +15,7 @@ public class MixinMobBurning
     {
         Mob mob = (Mob) (Object) this;
         int burnDay = ScalingMobsConfig.getInstance().getMobsStopBurningDay();
-        boolean canBurnOnThisDay = (int) (mob.level().getDayTime() / 24000L) >= burnDay;
+        boolean canBurnOnThisDay = (int) (mob.level().getDayTime() / 24000L) <= burnDay;
 
         cir.setReturnValue(cir.getReturnValue() && canBurnOnThisDay);
     }
