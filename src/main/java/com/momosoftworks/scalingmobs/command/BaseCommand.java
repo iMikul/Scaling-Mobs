@@ -1,7 +1,6 @@
 package com.momosoftworks.scalingmobs.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 

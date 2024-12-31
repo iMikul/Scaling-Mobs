@@ -105,7 +105,7 @@ public class MonsterEvents
 
     // Piercing Damage
     @SubscribeEvent
-    public static void onMobDamage(LivingDamageEvent event)
+    public static void onMobDealDamage(LivingDamageEvent event)
     {
         if (event.getEntity() instanceof Player
         && event.getSource().getEntity() instanceof LivingEntity living && isScalingMob(living))
